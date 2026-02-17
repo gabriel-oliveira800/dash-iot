@@ -73,6 +73,17 @@ function App() {
         };
     }, [deviceId, user]);
 
+    const handleOnSaveDeviceId = (deviceId: string) => {
+        api.saveDeviceId({
+            deviceId,
+            onSuccess: () => {
+                setDeviceId(deviceId);
+                setModalOpen(false);
+            },
+            onError: (error) => console.error(error)
+        });
+    }
+
 
     if (loading || !user) return <Loading />;
 
@@ -89,10 +100,7 @@ function App() {
                 <ModalDeviceId
                     isOpen={modalOpen}
                     savedDeviceId={deviceId}
-                    onSave={(deviceId) => {
-                        setDeviceId(deviceId);
-                        setModalOpen(false);
-                    }}
+                    onSave={handleOnSaveDeviceId}
                     onClose={() => setModalOpen(false)}
                 />
             )}
