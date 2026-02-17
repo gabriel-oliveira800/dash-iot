@@ -1,20 +1,39 @@
 import { AlertTriangle, ArrowRightLeft, Zap } from "lucide-react";
-import { useState } from "react";
+
+import type { TrafficData } from "../../data/traffic";
 
 import { TrafficLightVisual } from "./TrafficLightVisual";
 import { StatusBadge } from "../StatusBadge";
-import type { TrafficData } from "../../data/traffic";
 
-function TrafficHardWare() {
-    const [trafficData, setTrafficData] = useState<TrafficData>({
-        mode: 'normal',
-        light1: 'red',
-        light2: 'green',
-        lastUpdate: new Date(),
-    });
+interface TrafficHardWareProps {
+    trafficData: TrafficData | null;
+    setTrafficData: (data: TrafficData) => void;
+}
+
+function TrafficHardWare({ trafficData, setTrafficData }: TrafficHardWareProps) {
+    if (!trafficData) {
+        return (
+            <div className="space-y-6 animate-in fade-in duration-500">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <ArrowRightLeft className="text-indigo-600" />
+                        Controle de Tráfego
+                    </h2>
+                    <StatusBadge timestamp={new Date} />
+                </div>
+                <div className="bg-slate-100 border-l-4 border-slate-500 text-slate-700 p-4 rounded-r shadow-sm mb-6 flex items-start gap-3">
+                    <AlertTriangle />
+                    <div>
+                        <p className="font-bold">Carregando dados...</p>
+                        <p>Por favor, aguarde enquanto os dados são carregados.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const simulateTrafficUpdate = (newData: TrafficData) => {
-        setTrafficData({ ...trafficData, ...newData, lastUpdate: new Date() });
+        setTrafficData({ ...trafficData, ...newData });
     };
 
     return (
@@ -24,7 +43,7 @@ function TrafficHardWare() {
                     <ArrowRightLeft className="text-indigo-600" />
                     Controle de Tráfego
                 </h2>
-                <StatusBadge timestamp={trafficData.lastUpdate} />
+                <StatusBadge timestamp={new Date} />
             </div>
 
             {trafficData.mode === 'error' && (
@@ -37,7 +56,7 @@ function TrafficHardWare() {
                 </div>
             )}
 
-            <div className="grid md:grid-cols-2 gap-8 justify-items-center bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+            <div className="flex flex-row justify-center items-center gap-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex flex-col items-center gap-4">
                     <span className="text-lg font-semibold text-slate-600">Via Principal (Norte/Sul)</span>
                     <TrafficLightVisual color={trafficData.mode === 'error' ? 'yellow' : trafficData.light1} label="ID: SEM-01" />

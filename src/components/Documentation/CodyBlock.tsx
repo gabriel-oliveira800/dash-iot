@@ -1,7 +1,18 @@
-import { useState } from "react";
-import { Copy } from "lucide-react";
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import SyntaxHighlighter from 'react-syntax-highlighter';
 
-function CopyBlock({ text, enableCopy = true }: { text: string, enableCopy?: boolean }) {
+import { Copy } from "lucide-react";
+import { useState } from "react";
+
+type Language = 'html' | 'cpp' | 'c' | 'csharp' | 'html'
+
+interface CodyBlockProps {
+    text: string;
+    language?: Language;
+    enableCopy?: boolean;
+}
+
+function CopyBlock({ text, language = "html", enableCopy = true }: CodyBlockProps) {
     const [copied, setCopied] = useState(false);
     const handleCopy = () => {
         navigator.clipboard.writeText(text);
@@ -14,10 +25,10 @@ function CopyBlock({ text, enableCopy = true }: { text: string, enableCopy?: boo
             className="relative group cursor-pointer"
             onClick={() => { if (enableCopy) handleCopy(); }}
         >
-            <pre className="bg-slate-100 p-4 flex justify-between items-center font-mono text-sm rounded-lg overflow-x-auto">
-                {text}
-            </pre>
 
+            <SyntaxHighlighter language={language} style={docco}>
+                {text}
+            </SyntaxHighlighter>
             {enableCopy && (
                 <button
                     onClick={handleCopy}
@@ -30,4 +41,18 @@ function CopyBlock({ text, enableCopy = true }: { text: string, enableCopy?: boo
     );
 }
 
-export { CopyBlock };
+interface CopyBlockWithLabelProps {
+    title: string;
+    code: string;
+}
+
+function CopyBlockWithLabel({ title, code }: CopyBlockWithLabelProps) {
+    return (
+        <div>
+            <label className="text-xs font-bold text-slate-500 uppercase">{title}</label>
+            <CopyBlock text={code} />
+        </div>
+    )
+}
+
+export { CopyBlock, CopyBlockWithLabel };

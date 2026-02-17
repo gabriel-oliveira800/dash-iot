@@ -1,23 +1,45 @@
-import { Activity, Settings } from "lucide-react";
-import { useState } from "react";
+import { Activity, AlertTriangle, Settings } from "lucide-react";
 
-import { StatusBadge } from "../StatusBadge";
-import type { SensorData } from "../../data/sensor";
-import { SensorTypeButton } from "./SensorTypeButton";
-import { UltrasonicContent } from "./UltrasonicContent";
-import { MagneticContent } from "./MagneticContent";
+import { SimulateUltrasonicSensorTest } from "./SimulateUltrasonicSensorTest";
+import { SimulateMagneticSensorTest } from "./SimulateMagneticSensorTest";
+
 import { SliderLimitTrigger } from "./SliderLimitTrigger";
-import { SimulateSensorTest } from "./SimulateSensorTest";
+import { UltrasonicContent } from "./UltrasonicContent";
+import { SensorTypeButton } from "./SensorTypeButton";
+import type { SensorData } from "../../data/sensor";
+import { MagneticContent } from "./MagneticContent";
+import { StatusBadge } from "../StatusBadge";
 
-function SensorHardWare() {
-    const [sensorData, setSensorData] = useState<SensorData>({
-        type: 'ultrasonic',
-        value: 0,
-        count: 0,
-        isOpen: false,
-        limit: 50,
-        lastUpdate: new Date()
-    });
+interface SensorHardWareProps {
+    sensorData: SensorData | null;
+    setSensorData: (data: SensorData) => void;
+}
+
+function SensorHardWare({ sensorData, setSensorData }: SensorHardWareProps) {
+    if (!sensorData) {
+        return (
+            <div className="space-y-6 animate-in fade-in duration-500">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <Activity className="text-indigo-600" />
+                        Sensores de Ambiente
+                    </h2>
+                    <StatusBadge timestamp={new Date()} />
+                </div>
+                <div className="bg-slate-100 border-l-4 border-slate-500 text-slate-700 p-4 rounded-r shadow-sm mb-6 flex items-start gap-3">
+                    <AlertTriangle />
+                    <div>
+                        <p className="font-bold">Carregando dados...</p>
+                        <p>Por favor, aguarde enquanto os dados são carregados.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const simulateSensorUpdate = (newData: Partial<SensorData>) => {
+        setSensorData({ ...sensorData, ...newData });
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -26,7 +48,7 @@ function SensorHardWare() {
                     <Activity className="text-indigo-600" />
                     Sensores de Ambiente
                 </h2>
-                <StatusBadge timestamp={sensorData.lastUpdate} />
+                <StatusBadge timestamp={new Date()} />
             </div>
 
 
@@ -49,7 +71,7 @@ function SensorHardWare() {
                             type="magnetic"
                             currentType={sensorData.type}
                             onClick={() => setSensorData({ ...sensorData, type: 'magnetic' })}
-                            title="Magnético (Reed Switch)" description="Porta/Gaveta Aberta ou Fechada"
+                            title="Magnético" description="Porta/Gaveta Aberta ou Fechada"
                         />
 
                     </div>
@@ -62,7 +84,7 @@ function SensorHardWare() {
                     )}
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2 flex flex-col items-center justify-center min-h-[250px]">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2 flex flex-col items-center justify-center min-h-62.5">
                     {sensorData.type === 'ultrasonic' ? (
                         <UltrasonicContent sensorData={sensorData} />
                     ) : (
@@ -71,9 +93,14 @@ function SensorHardWare() {
                 </div>
             </div>
 
-            <SimulateSensorTest
+            <SimulateUltrasonicSensorTest
                 sensorData={sensorData}
-                simulateSensorUpdate={(data) => setSensorData(prev => ({ ...prev, ...data }))}
+                simulateSensorUpdate={simulateSensorUpdate}
+            />
+
+            <SimulateMagneticSensorTest
+                sensorData={sensorData}
+                simulateSensorUpdate={simulateSensorUpdate}
             />
         </div>
     );
