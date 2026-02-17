@@ -34,7 +34,31 @@
 
 ---
 
-## 🚀 Tech Stack
+## ▶️Screenshots
+
+Here are some screenshots of the I.O.T Cloud dashboard in action:
+
+### Dashboard Overview
+![Dashboard Overview](screenshot/01.png)
+
+### Traffic Light Monitoring
+![Traffic Light Monitoring](screenshot/02.png)
+
+### Sensor Data Display
+![Sensor Data Display](screenshot/03.png)
+
+### Hardware Simulator
+![Hardware Simulator](screenshot/04.png)
+
+### API Documentation
+![API Documentation](screenshot/05.png)
+
+### Mobile Responsive View
+![Mobile Responsive View](screenshot/06.png)
+
+---
+
+## 🚧Tech Stack
 
 - **Framework**: [React 19](https://react.dev/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
@@ -57,8 +81,8 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/iot-resource.git
-   cd iot-resource
+   git clone https://github.com/gabriel-oliveira800/dash-iot
+   cd dash-iot
    ```
 
 2. **Install dependencies**
