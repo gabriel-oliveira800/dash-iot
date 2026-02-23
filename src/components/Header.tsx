@@ -53,16 +53,16 @@ function Header({ deviceId, activeTab = 'traffic', openModal, setActiveTab }: He
 
                 <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                     <button
-                        onClick={() => setActiveTab('traffic')}
-                        className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${activeTab === 'traffic' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
-                    >
-                        Semáforo
-                    </button>
-                    <button
                         onClick={() => setActiveTab('sensor')}
-                        className={`cursor-pointer whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'sensor' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
+                        className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${activeTab === 'sensor' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
                     >
                         Sensores
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('traffic')}
+                        className={`cursor-pointer whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'traffic' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 text-slate-300'}`}
+                    >
+                        Semáforo
                     </button>
                     <button
                         onClick={() => setActiveTab('docs')}

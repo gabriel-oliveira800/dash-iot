@@ -6,20 +6,22 @@ import { auth } from './config/firebase';
 import type { TrafficData } from './data/traffic';
 import api from './config/api';
 
-import { TabContent, type Tab } from './components/TabsContent';
 import { TrafficHardWare } from './components/TrafficHardWare';
 import { SensorHardWare } from './components/SensorHardWare';
 import { Documentation } from './components/Documentation';
 import { Loading } from './components/Loading';
 import { Header } from './components/Header';
+
+import type { Tab } from './components/TabsContent';
+import { DEVICE_ID_KEY, placeholderBase64 } from './utils/constants';
 import type { SensorData } from './data/sensor';
+
 import ModalDeviceId from './components/ModalDeviceId';
-import { DEVICE_ID_KEY } from './utils/constants';
 
 function App() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<Tab>('traffic');
+    const [activeTab, setActiveTab] = useState<Tab>('sensor');
 
     const [deviceId, setDeviceId] = useState<string>("");
     const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -84,7 +86,6 @@ function App() {
         });
     }
 
-
     if (loading || !user) return <Loading />;
 
     return (
@@ -106,20 +107,29 @@ function App() {
             )}
 
             <main className="max-w-6xl mx-auto p-4 md:p-6 pb-32">
-                <TabContent
-                    activeTab={activeTab}
-                    items={[
-                        {
-                            activeTab: 'traffic',
-                            component: <TrafficHardWare trafficData={trafficData} setTrafficData={setTrafficData} />
-                        },
-                        {
-                            activeTab: 'sensor',
-                            component: <SensorHardWare sensorData={sensorData} setSensorData={setSensorData} />
-                        },
-                        { activeTab: 'docs', component: <Documentation /> },
-                    ]}
-                />
+                {activeTab === 'sensor' && (
+                    <SensorHardWare
+                        sensorData={sensorData}
+                        onLimitChange={limit => api.updateLimit({ deviceId, limit })}
+                        onReset={async () => {
+                            const data: SensorData = {
+                                photoUrl: placeholderBase64,
+                                distance: sensorData?.distance ?? 0,
+                            };
+
+                            setSensorData(data);
+                            await api.updateSensorData({ deviceId: deviceId!, data });
+                        }}
+                    />
+                )}
+
+                {activeTab === 'traffic' && (
+                    <TrafficHardWare
+                        trafficData={trafficData} setTrafficData={setTrafficData}
+                    />
+                )}
+
+                {activeTab === 'docs' && <Documentation />}
             </main>
         </div>
     );

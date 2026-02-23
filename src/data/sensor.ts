@@ -1,11 +1,6 @@
-
 export type SensorType = 'ultrasonic' | 'magnetic';
 
 export interface SensorData {
-    type: SensorType,
-    value: number,
-    count: number,
-    isOpen: boolean,
+    distance: number,
     photoUrl?: string | null,
-    limit: number,
 };

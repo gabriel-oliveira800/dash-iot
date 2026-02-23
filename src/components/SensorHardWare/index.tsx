@@ -1,21 +1,56 @@
 import { Activity, AlertTriangle, Settings } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-import { SimulateUltrasonicSensorTest } from "./SimulateUltrasonicSensorTest";
-import { SimulateMagneticSensorTest } from "./SimulateMagneticSensorTest";
+import { getSavedData, saveData } from "../../utils/preferences";
+import type { SensorData, SensorType } from "../../data/sensor";
 
 import { SliderLimitTrigger } from "./SliderLimitTrigger";
 import { UltrasonicContent } from "./UltrasonicContent";
 import { SensorTypeButton } from "./SensorTypeButton";
-import type { SensorData } from "../../data/sensor";
 import { MagneticContent } from "./MagneticContent";
 import { StatusBadge } from "../StatusBadge";
 
 interface SensorHardWareProps {
+    onReset: () => void;
     sensorData: SensorData | null;
-    setSensorData: (data: SensorData) => void;
+    onLimitChange: (limit: number) => void;
 }
 
-function SensorHardWare({ sensorData, setSensorData }: SensorHardWareProps) {
+function SensorHardWare({ sensorData, onReset, onLimitChange }: SensorHardWareProps) {
+    const [type, setType] = useState<SensorType>('ultrasonic')
+
+    const [limit, setLimit] = useState<number>(
+        () => getSavedData('@app:limit', 10)
+    )
+    const [qntPeople, setQntPeople] = useState<number>(
+        () => getSavedData('@app:qntPeople', 0)
+    )
+
+    const handleReset = () => {
+        setQntPeople(0)
+        saveData('@app:qntPeople', 0)
+        onReset()
+    }
+
+    const canCountAgain = useRef(true)
+
+    useEffect(() => {
+        if (sensorData == null) return
+
+        if (sensorData.distance < limit && canCountAgain.current) {
+            setQntPeople(prev => {
+                const newValue = prev + 1
+                saveData('@app:qntPeople', newValue)
+                return newValue
+            })
+
+            canCountAgain.current = false
+        }
+
+        if (sensorData.distance > limit) canCountAgain.current = true
+    }, [sensorData])
+
+
     if (!sensorData) {
         return (
             <div className="space-y-6 animate-in fade-in duration-500">
@@ -36,10 +71,6 @@ function SensorHardWare({ sensorData, setSensorData }: SensorHardWareProps) {
             </div>
         );
     }
-
-    const simulateSensorUpdate = (newData: Partial<SensorData>) => {
-        setSensorData({ ...sensorData, ...newData });
-    };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -62,46 +93,47 @@ function SensorHardWare({ sensorData, setSensorData }: SensorHardWareProps) {
                         <SensorTypeButton
                             type="ultrasonic"
                             title="Ultrassônico"
-                            currentType={sensorData.type}
+                            currentType={type}
+                            onClick={() => setType('ultrasonic')}
                             description="Medidor de Distância / Contador"
-                            onClick={() => setSensorData({ ...sensorData, type: 'ultrasonic' })}
                         />
 
                         <SensorTypeButton
                             type="magnetic"
-                            currentType={sensorData.type}
-                            onClick={() => setSensorData({ ...sensorData, type: 'magnetic' })}
+                            currentType={type}
+                            onClick={() => setType('magnetic')}
                             title="Magnético" description="Porta/Gaveta Aberta ou Fechada"
                         />
 
                     </div>
 
-                    {sensorData.type === 'ultrasonic' && (
-                        <SliderLimitTrigger
-                            sensorData={sensorData}
-                            setSensorData={setSensorData}
-                        />
-                    )}
+                    <SliderLimitTrigger
+                        limit={limit}
+                        setLimit={(value) => {
+                            setLimit(value);
+                            onLimitChange(value);
+                        }}
+                    />
                 </div>
 
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2 flex flex-col items-center justify-center min-h-62.5">
-                    {sensorData.type === 'ultrasonic' ? (
-                        <UltrasonicContent sensorData={sensorData} />
-                    ) : (
-                        <MagneticContent sensorData={sensorData} />
+
+                    {type === 'ultrasonic' && (
+                        <UltrasonicContent
+                            limit={limit}
+                            data={sensorData}
+                            qntPeople={qntPeople}
+                            onReset={handleReset}
+                        />
+                    )}
+
+                    {type === 'magnetic' && (
+                        <MagneticContent
+                            isOpen={sensorData.distance !== null && sensorData.distance <= limit}
+                        />
                     )}
                 </div>
             </div>
-
-            <SimulateUltrasonicSensorTest
-                sensorData={sensorData}
-                simulateSensorUpdate={simulateSensorUpdate}
-            />
-
-            <SimulateMagneticSensorTest
-                sensorData={sensorData}
-                simulateSensorUpdate={simulateSensorUpdate}
-            />
         </div>
     );
 }

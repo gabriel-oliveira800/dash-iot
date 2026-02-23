@@ -2,7 +2,14 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
 #include "core/api.h"
+
+// Firebase
+#define BASE_URL "https://firestore.googleapis.com/v1/projects/dash-iot-97222"
+#define URL_SENSOR "/databases/(default)/documents/metrics/69F9-5A24-F6F5-967D/data/sensors"
+
+static String makeRequest(HTTPClient &http, String url, String method, String body);
 
 void connectWifi(WiFiMulti &wifiMulti, String ssid, String password)
 {
@@ -32,82 +39,25 @@ bool isWifiConnected(WiFiMulti &wifiMulti)
     return WiFi.status() == WL_CONNECTED;
 }
 
-String makeRequest(HTTPClient &http, String url, String method, String body, std::vector<HttpHeader> headers)
-{
-    http.begin(url);
+void updateSensor(HTTPClient &http, float distance) {
+    http.begin(String(BASE_URL) + String(URL_SENSOR));
+    http.addHeader("Content-Type", "application/json");
 
-    // Debug import info before making the request
-    Serial.println("---------------------------------------------");
-    Serial.println("Nova Request");
-    Serial.println("---------------------------------------------");
-    Serial.printf("[%s]->%s\n", method.c_str(), url.c_str());
-    Serial.printf("body: \n%s\n", body.c_str());
-    Serial.println("---------------------------------------------");
-    Serial.flush();
+    StaticJsonDocument<2048> doc; 
 
-    for (auto &h : headers)
-    {
-        http.addHeader(h.key, h.value);
-    }
+    JsonObject fields = doc.createNestedObject("fields");
+    JsonObject distanceField = fields.createNestedObject("distance");
+    distanceField["doubleValue"] = distance;
 
-    int httpCode;
-    String response = "";
+    String body;
+    serializeJson(doc, body);
 
-    if (method == "GET")
-    {
-        httpCode = http.GET();
-    }
-    else if (method == "POST")
-    {
-        httpCode = http.POST(body);
-    }
-    else if (method == "PATCH")
-    {
-        httpCode = http.PATCH(body);
-    }
-    else
-    {
-        Serial.println("Unsupported HTTP method");
-        http.end();
-        return "";
-    }
-
-    const char *headerKeys[] = {"Content-Type", "Content-Length"};
-    const size_t headerKeysCount = sizeof(headerKeys) / sizeof(headerKeys[0]);
-    http.collectHeaders(headerKeys, headerKeysCount);
-
-    if (httpCode > 0)
-    {
-        Serial.printf("status code: %d\n", httpCode);
-        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED)
-        {
-            response = http.getString();
-            Serial.printf("[RESPONSE]: %s\n", response.c_str());
-            Serial.flush();
-        }
-        else
-        {
-            Serial.println("error code: " + String(httpCode));
-            Serial.flush();
-        }
-    }
-    else
-    {
-        Serial.printf("HTTP error: %s\n", http.errorToString(httpCode).c_str());
+    int httpCode = http.PATCH(body);
+    if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED){
+        Serial.println("Dados enviado!");
+    } else {
+        Serial.printf("Erro: %d\n", httpCode);
     }
 
     http.end();
-    return response;
-}
-
-String makeRequest(HTTPClient &http, String url)
-{
-    return makeRequest(http, url, "GET", "", {});
-}
-
-String makeRequest(HTTPClient &http, String url, String body, String contentType)
-{
-    std::vector<HttpHeader> headers = {
-        {"Content-Type", contentType}};
-    return makeRequest(http, url, "PATCH", body, headers);
 }

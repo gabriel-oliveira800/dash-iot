@@ -38,6 +38,31 @@ class Api {
         }
     }
 
+    async updateSensorData({ deviceId, data }: { deviceId: string; data: Partial<SensorData> }) {
+        try {
+            await setDoc(
+                doc(db, 'metrics', deviceId, 'data', 'sensors'),
+                data,
+                { merge: true }
+            );
+        } catch (error) {
+            console.error('Erro ao atualizar dados do sensor:', error);
+        }
+    }
+
+    async updateLimit({ deviceId, limit }: { deviceId: string; limit: number }) {
+        try {
+            await setDoc(
+                doc(db, 'metrics', deviceId, 'data', 'config'),
+                { limit: limit },
+                { merge: true }
+            );
+        } catch (error) {
+            console.error('Erro ao atualizar limite:', error);
+        }
+    }
+
+
     subscribeToGetData<T = TrafficData | SensorData>({
         deviceId,
         document,

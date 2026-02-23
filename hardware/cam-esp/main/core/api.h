@@ -6,25 +6,11 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
 
-struct HttpHeader {
-    String key;
-    String value;
-};
+#define DEFAULT_LIMIT_DISTANCE 10.0
 
 bool isWifiConnected(WiFiMulti &wifiMulti);
 void connectWifi(WiFiMulti &client, String ssid, String password);
-
-String makeRequest(
-    HTTPClient &http,
-    String url,
-    String method,
-    String body,
-    std::vector<HttpHeader> headers
-);
-String makeRequest(HTTPClient &http, String url);
-String makeRequest(HTTPClient &http, String url, String body, String contentType);
-
-String toggleMagneticSensor(HTTPClient &http, bool isOpen);
-
+void updateSensor(HTTPClient &http, float distance);
 #endif
